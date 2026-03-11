@@ -15,3 +15,19 @@
 
 ### 踩坑点
 - 连用两个`if`而不是用`if else`
+
+### 初始化
+- 开启时钟APB2 -> 定义结构体并赋值 -> GPIO_Init();
+```c
+void LED_Init(void) 
+{
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
+	
+	GPIO_InitTypeDef GPIO_InitStruct;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_0;
+	GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
+	
+	GPIO_Init(GPIOA, &GPIO_InitStruct);
+}
+```
