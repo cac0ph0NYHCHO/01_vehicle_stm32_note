@@ -10,7 +10,12 @@
 ### EXTI基本结构
 <img width="1524" height="833" alt="image" src="https://github.com/user-attachments/assets/5c6d2468-2992-4f83-b2d2-33798e7e1da4" />
 
-- AFIO复用IO口
+- EXTI可以监测指定GPIO口的电平信号，当其指定的GPIO口产生电平变化时，EXTI将立即向NVIC发出中断申请，经过NVIC裁决后即可中断CPU主程序，使CPU执行EXTI对应的中断程序
+- 支持的触发方式：上升沿/下降沿/双边沿/软件触发
+- 支持的GPIO口：所有GPIO口，但相同的Pin不能同时触发中断
+- 通道数：16个GPIO_Pin，外加PVD输出、RTC闹钟、USB唤醒、以太网唤醒
+- 触发响应方式：中断响应/事件响应  
+- AFIO复用IO口：
 <img width="686" height="738" alt="image" src="https://github.com/user-attachments/assets/8ddd6e35-cc28-46af-beb0-e12267f0a419" />
 
 ### 对射式红外传感器计次
