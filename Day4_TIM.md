@@ -95,6 +95,7 @@ void TIM2_IRQHandler(void)
 
 ### 定时器外部时钟
 - 通过红外传感器手动模拟外部时钟
+
 `Timer.c`
 ```c
 #include "stm32f10x.h"                  // Device header
