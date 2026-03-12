@@ -21,6 +21,8 @@
 ## 定时中断基本结构
 <img width="1140" height="491" alt="image" src="https://github.com/user-attachments/assets/46450928-404f-4eae-84d1-58ca1bfe7213" />
 
+- 因为定时器里有好多地方会申请中断，所以需要有`中断输出控制`模块
+
 ### 预分频器时序
 <img width="1182" height="638" alt="image" src="https://github.com/user-attachments/assets/834f58e7-d44f-4b18-96f3-c2660cbb3949" />
 
