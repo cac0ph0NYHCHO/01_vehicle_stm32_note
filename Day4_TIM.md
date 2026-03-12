@@ -92,3 +92,60 @@ void TIM2_IRQHandler(void)
 }
 ```
 - 跨.c文件的变量：在要使用的.c文件里用extern声明
+
+### 定时器外部时钟
+- 通过红外传感器手动模拟外部时钟
+`Timer.c`
+```c
+#include "stm32f10x.h"                  // Device header
+
+extern int16_t Num;
+
+void Timer_Init(void)
+{	//开启TIM和GPIO时钟
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
+	//配置GPIO外部时钟源
+	//TIM2外部时钟对应的GPIO口是PA0
+	GPIO_InitTypeDef GPIO_InitStructure;
+ 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+ 	GPIO_Init(GPIOA, &GPIO_InitStructure);
+	//选择ETR外部时钟->外部时钟模式2
+    //TIM_ETRClockMode2Config(TIMx, 预分频, 极性是否翻转, 采样频率的选择);
+	TIM_ETRClockMode2Config(TIM2, TIM_ExtTRGPSC_OFF, TIM_ExtTRGPolarity_NonInverted, 0x00);
+	//配置时基单元
+	TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStruct;
+	TIM_TimeBaseInitStruct.TIM_ClockDivision = TIM_CKD_DIV1;		//时钟源到时基单元中间滤波器的一个参数，无影响
+	TIM_TimeBaseInitStruct.TIM_CounterMode = TIM_CounterMode_Up;	//向上计数
+	TIM_TimeBaseInitStruct.TIM_Period = 10 - 1;						//ARR的值
+	TIM_TimeBaseInitStruct.TIM_Prescaler = 1 - 1;					//PSC的值
+	TIM_TimeBaseInitStruct.TIM_RepetitionCounter = 0;				//高级计时器才有的
+	TIM_TimeBaseInit(TIM2, &TIM_TimeBaseInitStruct);
+	
+	//初始化时使Num从0开始
+	TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+	
+	//TIM中断输出控制
+	TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);				//更新事件时中断标志位置1
+	//NVIC初始化
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);			//2位抢占优先级2位响应优先级
+	NVIC_InitTypeDef NVIC_InitStruct;
+	NVIC_InitStruct.NVIC_IRQChannel = TIM2_IRQn;			//TIM2中断通道
+	NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;		
+	NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 1;	//抢占优先级设为1
+	NVIC_InitStruct.NVIC_IRQChannelSubPriority = 1;			//响应优先级设为1
+	NVIC_Init(&NVIC_InitStruct);
+	//使能TIM
+	TIM_Cmd(TIM2, ENABLE);
+}
+
+void TIM2_IRQHandler(void)
+{
+	if(TIM_GetITStatus(TIM2, TIM_IT_Update) == SET){
+		Num++;
+		TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+	}
+}
+```
