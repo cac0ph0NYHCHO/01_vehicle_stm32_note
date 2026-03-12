@@ -42,3 +42,53 @@
 ## RCC时钟树
 <img width="651" height="709" alt="image" src="https://github.com/user-attachments/assets/253c4774-61e6-4d9d-bfad-52e25a2404f9" />
 
+# 示例demo
+### 定时器定时中断
+`Timer.c`
+```c
+#include "stm32f10x.h"                  // Device header
+
+extern int16_t Num;      //`Num`定义在`main.c`里面
+
+void Timer_Init(void)
+{	//开启TIM时钟
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
+	//选择RCC内部时钟
+	TIM_InternalClockConfig(TIM2);
+	//配置时基单元
+	TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStruct;
+	TIM_TimeBaseInitStruct.TIM_ClockDivision = TIM_CKD_DIV1;		//时钟源到时基单元中间滤波器的一个参数，无影响
+	TIM_TimeBaseInitStruct.TIM_CounterMode = TIM_CounterMode_Up;	//向上计数
+	TIM_TimeBaseInitStruct.TIM_Period = 10000 - 1;					//ARR的值
+	TIM_TimeBaseInitStruct.TIM_Prescaler = 7200 - 1;				//PSC的值
+	TIM_TimeBaseInitStruct.TIM_RepetitionCounter = 0;				//高级计时器才有的
+	TIM_TimeBaseInit(TIM2, &TIM_TimeBaseInitStruct);
+	
+	
+	//初始化时使Num从0开始
+	TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+	
+	
+	//TIM中断输出控制
+	TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);				//更新事件时中断标志位置1
+	//NVIC初始化
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);			//2位抢占优先级2位响应优先级
+	NVIC_InitTypeDef NVIC_InitStruct;
+	NVIC_InitStruct.NVIC_IRQChannel = TIM2_IRQn;			//TIM2中断通道
+	NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;		
+	NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 1;	//抢占优先级设为1
+	NVIC_InitStruct.NVIC_IRQChannelSubPriority = 1;			//响应优先级设为1
+	NVIC_Init(&NVIC_InitStruct);
+	//使能TIM
+	TIM_Cmd(TIM2, ENABLE);
+}
+
+void TIM2_IRQHandler(void)
+{
+	if(TIM_GetITStatus(TIM2, TIM_IT_Update) == SET){
+		Num++;
+		TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+	}
+}
+```
+- 跨.c文件的变量：在要使用的.c文件里用extern声明
