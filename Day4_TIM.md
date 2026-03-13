@@ -42,8 +42,8 @@
 ## RCC时钟树
 <img width="651" height="709" alt="image" src="https://github.com/user-attachments/assets/253c4774-61e6-4d9d-bfad-52e25a2404f9" />
 
-# 示例demo
-### 定时器定时中断
+# demo
+## 定时器定时中断
 `Timer.c`
 ```c
 #include "stm32f10x.h"                  // Device header
@@ -93,7 +93,7 @@ void TIM2_IRQHandler(void)
 ```
 - 跨.c文件的变量：在要使用的.c文件里用extern声明
 
-### 定时器外部时钟
+## 定时器外部时钟
 - 通过红外传感器手动模拟外部时钟
 
 `Timer.c`
@@ -150,3 +150,17 @@ void TIM2_IRQHandler(void)
 	}
 }
 ```
+
+## 定时器输出比较
+- OC（Output Compare）输出比较
+- 输出比较可以通过比较CNT与CCR寄存器值的关系，来对输出电平进行置1、置0或翻转的操作，用于输出一定频率和占空比的PWM波形
+- 每个高级定时器和通用定时器都拥有4个输出比较通道，高级定时器的前3个通道额外拥有死区生成和互补输出的功能
+### PWM简介
+- PWM（Pulse Width Modulation）脉冲宽度调制
+- 在具有惯性的系统中，可以通过对一系列脉冲的宽度进行调制，来等效地获得所需要的模拟参量，常应用于电机控速等领域
+- PWM参数：  
+     频率 = 1 / TS,占空比 = TON / TS ,分辨率 = 占空比变化步距
+ 
+
+
+
