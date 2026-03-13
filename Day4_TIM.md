@@ -161,3 +161,7 @@ void TIM2_IRQHandler(void)
 - 在具有惯性的系统中，可以通过对一系列脉冲的宽度进行调制，来等效地获得所需要的模拟参量，常应用于电机控速等领域
 - PWM参数：  
      频率 = 1 / TS,占空比 = TON / TS ,分辨率 = 占空比变化步距
+！[1](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/1.png)
+
+### 输出比较通道(通用)
+！[2](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note/images/2.png)
