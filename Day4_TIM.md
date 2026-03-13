@@ -212,7 +212,7 @@ void PWM_Init(void)
 	TIM_OCInitStruct.TIM_OCMode = TIM_OCMode_PWM1;				//PWM1模式1
 	TIM_OCInitStruct.TIM_OCPolarity = TIM_OCPolarity_High;		//极性不反转
 	TIM_OCInitStruct.TIM_OutputState = TIM_OutputState_Enable;	//使能
-	TIM_OCInitStruct.TIM_Pulse = 50;								//CCR的值
+	TIM_OCInitStruct.TIM_Pulse = 50;							//CCR的值
 	TIM_OC1Init(TIM2, &TIM_OCInitStruct);
 }
 
