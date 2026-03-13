@@ -165,3 +165,14 @@ void TIM2_IRQHandler(void)
 
 ### 输出比较通道(通用)
 ![2](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/2.png)
+
+### 输出比较模式
+![4](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/4.png)
+
+### PWM基本结构
+![3](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/3.png)
+
+- 参数计算
+- PWM频率：	Freq = CK_PSC / (PSC + 1) / (ARR + 1)
+- PWM占空比：	Duty = CCR / (ARR + 1)
+- PWM分辨率：	Reso = 1 / (ARR + 1)
