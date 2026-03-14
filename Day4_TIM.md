@@ -263,3 +263,15 @@ int main(void)
 - 测频法：在闸门时间T内，对上升沿计次，得到N，则频率:f_x=N / T
 - 测周法：两个上升沿内，以标准频率fc计次，得到N ，则频率:f_x=f_c / N
 - 中界频率：测频法与测周法误差相等的频率点:f_m=√f_c / T
+
+### 输入捕获通道
+![6](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/6.png)
+
+### 主从触发模式
+![7](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/7.png)
+
+### 输入捕获基本结构
+![8](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/8.png)
+
+### PWMI基本结构
+![9](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/9.png)
