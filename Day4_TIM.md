@@ -258,7 +258,7 @@ int main(void)
 - 可配合主从触发模式，实现硬件全自动测量
 
 ### 频率测量
-![5]()(https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/5.png)
+![5](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/5.png)
 
 - 测频法：在闸门时间T内，对上升沿计次，得到N，则频率:f_x=N / T
 - 测周法：两个上升沿内，以标准频率fc计次，得到N ，则频率:f_x=f_c / N
