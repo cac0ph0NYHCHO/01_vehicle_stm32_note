@@ -222,6 +222,7 @@ void PWM_SetCCR(uint16_t Compare)
 }
 ```
 - 给结构体成员赋初始值  
+
 `main.c`
 ```c
 #include "stm32f10x.h"                  // Device header
