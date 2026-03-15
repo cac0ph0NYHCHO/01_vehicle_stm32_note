@@ -275,3 +275,133 @@ int main(void)
 
 ### PWMI基本结构
 ![9](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/9.png)
+
+## PWMI模式测量频率占空比
+- 自己输出PWM波形，自己测量，可调频率和占空比
+`IC.c`
+```c
+#include "stm32f10x.h"                  // Device header
+
+void IC_Init(void)
+{
+	//开启TIM时钟
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
+	//初始化GPIO PA6
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
+	GPIO_InitTypeDef GPIO_InitStructure;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;					//上拉输入
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
+	//选择RCC内部时钟
+	TIM_InternalClockConfig(TIM3);
+	//配置时基单元
+	TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStruct;
+	TIM_TimeBaseInitStruct.TIM_ClockDivision = TIM_CKD_DIV1;		//时钟源到时基单元中间滤波器的一个参数，无影响
+	TIM_TimeBaseInitStruct.TIM_CounterMode = TIM_CounterMode_Up;	//向上计数
+	TIM_TimeBaseInitStruct.TIM_Period = 65536 - 1;					//ARR的值
+	TIM_TimeBaseInitStruct.TIM_Prescaler = 72 - 1;					//PSC的值
+	TIM_TimeBaseInitStruct.TIM_RepetitionCounter = 0;				//高级计时器才有的
+	TIM_TimeBaseInit(TIM3, &TIM_TimeBaseInitStruct);
+	//初始化IC1通道一和通道二
+	TIM_ICInitTypeDef TIM_ICInitStruct;
+	TIM_ICInitStruct.TIM_Channel = TIM_Channel_1;					//选择IC1
+	TIM_ICInitStruct.TIM_ICFilter = 0xF;							//数值越大滤波效果越好，受噪声影响小
+	TIM_ICInitStruct.TIM_ICPolarity = TIM_ICPolarity_Rising;		//测周期：上升沿触发
+	TIM_ICInitStruct.TIM_ICPrescaler = TIM_ICPSC_DIV1;				//不分频
+	TIM_ICInitStruct.TIM_ICSelection = TIM_ICSelection_DirectTI;	//直连通道，不是交叉通道
+	TIM_ICInit(TIM3, &TIM_ICInitStruct);
+	TIM_PWMIConfig(TIM3, &TIM_ICInitStruct);						//此PWMI函数自动把结构体里的值取反
+	//配置触发源选择和从模式
+	TIM_SelectInputTrigger(TIM3, TIM_TS_TI1FP1);					//选择TI1FP1作为触发源
+	TIM_SelectSlaveMode(TIM3, TIM_SlaveMode_Reset);					//硬件自动清零CCR
+	//使能TIM
+	TIM_Cmd(TIM3, ENABLE);
+}
+
+uint16_t IC_GetFreq(void)
+{
+	return 1000000/(TIM_GetCapture1(TIM3)+1);						//有点误差要+1
+}
+
+uint16_t IC_GetDuty(void)
+{
+	return (TIM_GetCapture2(TIM3)+1)*100/(TIM_GetCapture1(TIM3)+1);	//有点误差要+1
+}
+```
+
+`PWM.c`
+```c
+#include "stm32f10x.h"                  // Device header
+
+void PWM_Init(void)
+{	//开启TIM时钟
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
+	//初始化GPIO PA0
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
+	GPIO_InitTypeDef GPIO_InitStructure;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;					//复用推挽输出
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
+	//选择RCC内部时钟
+	TIM_InternalClockConfig(TIM2);
+	//配置时基单元
+	TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStruct;
+	TIM_TimeBaseInitStruct.TIM_ClockDivision = TIM_CKD_DIV1;		//时钟源到时基单元中间滤波器的一个参数，无影响
+	TIM_TimeBaseInitStruct.TIM_CounterMode = TIM_CounterMode_Up;	//向上计数
+	TIM_TimeBaseInitStruct.TIM_Period = 100 - 1;					//ARR的值
+	TIM_TimeBaseInitStruct.TIM_Prescaler = 720 - 1;					//PSC的值
+	TIM_TimeBaseInitStruct.TIM_RepetitionCounter = 0;				//高级计时器才有的
+	TIM_TimeBaseInit(TIM2, &TIM_TimeBaseInitStruct);
+	//使能TIM
+	TIM_Cmd(TIM2, ENABLE);
+	//配置输出比较单元OC1
+	TIM_OCInitTypeDef TIM_OCInitStruct;
+	TIM_OCStructInit(&TIM_OCInitStruct);						//给结构体赋默认值
+	TIM_OCInitStruct.TIM_OCMode = TIM_OCMode_PWM1;				//PWM1模式1
+	TIM_OCInitStruct.TIM_OCPolarity = TIM_OCPolarity_High;		//极性不反转
+	TIM_OCInitStruct.TIM_OutputState = TIM_OutputState_Enable;	//使能
+	TIM_OCInitStruct.TIM_Pulse = 50;							//CCR的值
+	TIM_OC1Init(TIM2, &TIM_OCInitStruct);
+}
+
+void PWM_SetCCR(uint16_t Compare)
+{
+	TIM_SetCompare1(TIM2, Compare);
+}
+
+void PWM_SetPSC(uint16_t Prescaler)
+{
+	TIM_PrescalerConfig(TIM2, Prescaler, TIM_PSCReloadMode_Immediate);
+}
+```
+
+`main.c`
+```c
+#include "stm32f10x.h"                  // Device header
+#include "Delay.h"
+#include "OLED.h"
+#include "PWM.h"
+#include "IC.h"
+
+int main(void)
+{
+	OLED_Init();
+	PWM_Init();
+	IC_Init();
+	
+	OLED_ShowString(1, 1, "Freq:00000Hz");
+	OLED_ShowString(2, 1, "Duty:00%");
+	
+
+	PWM_SetPSC(72 - 1);			//Freq = 72M/(PCS+1)/(ARR+1) = 72M/(PCS+1)/ 100
+	PWM_SetCCR(20);				//Duty = CCR/(ARR+1) = CCR/ 100
+	
+	while (1)
+	{
+		OLED_ShowNum(1, 6, IC_GetFreq(), 5);
+		OLED_ShowNum(2, 6, IC_GetDuty(), 2);
+	}
+}
+```
