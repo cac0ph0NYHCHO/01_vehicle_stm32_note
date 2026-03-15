@@ -277,7 +277,7 @@ int main(void)
 ![9](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/9.png)
 
 ## PWMI模式测量频率占空比
-- 自己输出PWM波形，自己测量，可调频率和占空比
+- 自己输出PWM波形，自己测量，可调频率和占空比  
 `IC.c`
 ```c
 #include "stm32f10x.h"                  // Device header
