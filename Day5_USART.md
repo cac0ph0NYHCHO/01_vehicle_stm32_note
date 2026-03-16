@@ -56,3 +56,8 @@
 - 计算公式：波特率 = fPCLK2/1 / (16 * DIV)
 ![19](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/19.png)
 
+### 数据模式
+- HEX模式/十六进制模式/二进制模式：以原始数据的形式显示
+- 文本模式/字符模式：以原始数据编码后的形式显示
+![20](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/20.png)
+![21](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/21.png)
