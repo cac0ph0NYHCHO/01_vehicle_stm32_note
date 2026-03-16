@@ -52,6 +52,7 @@
 ![18](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/18.png)
 
 ### 波特率发生器
-![19](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/19.png)
 - 发送器和接收器的波特率由波特率寄存器BRR里的DIV确定
 - 计算公式：波特率 = fPCLK2/1 / (16 * DIV)
+![19](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/19.png)
+
