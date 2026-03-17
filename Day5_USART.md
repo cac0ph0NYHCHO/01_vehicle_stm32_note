@@ -162,6 +162,7 @@ int fputc(int ch, FILE *f)
 
 ### 串口发送+接收
 - 进中断函数第一步就是判断标志位，最后一行记得清空标志位  
+
 `Serial.c`
 ```c
 #include "stm32f10x.h"                  // Device header
