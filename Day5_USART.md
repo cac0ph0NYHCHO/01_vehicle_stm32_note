@@ -148,3 +148,14 @@ void Serial_SendNumber(uint16_t Num, uint16_t Count)
 	}
 }
 ```
+- `fprintf重定向`
+- 勾选 MicroLIB  +  #include <stdio.h>
+```c
+//printf重定向
+int fputc(int ch, FILE *f)
+{
+	Serial_SendByte(ch);
+	return ch;
+}
+```
+- 换行用`\r\n`
