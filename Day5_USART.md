@@ -270,3 +270,17 @@ int main(void)
 	}
 }
 ```
+
+### HEX数据包
+![22](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/22.png)
+
+### 文本数据包
+![23](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/23.png)
+
+### HEX数据包接收
+![24](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/24.png)
+
+### 文本数据包接收
+![25](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/25.png)
+
+- **状态机**思想
