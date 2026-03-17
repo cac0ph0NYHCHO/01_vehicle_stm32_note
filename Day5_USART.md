@@ -159,3 +159,111 @@ int fputc(int ch, FILE *f)
 }
 ```
 - 换行用`\r\n`
+
+### 串口发送+接收
+`Serial.c`
+```c
+#include "stm32f10x.h"                  // Device header
+#include <stdio.h>
+
+uint8_t Serial_RxData;
+uint8_t Serial_RxFlag;
+
+void Serial_Init(void)
+{
+	//开启GPIO和USART时钟
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
+	//初始化GPIO PA9，发送数据
+	GPIO_InitTypeDef GPIO_InitStructure;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
+	//初始化GPIO PA10，接收数据
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
+	//初始化USART1
+	USART_InitTypeDef USART_InitStruct;
+	USART_InitStruct.USART_BaudRate = 9600;											//波特率
+	USART_InitStruct.USART_HardwareFlowControl = USART_HardwareFlowControl_None;	//硬件流控制
+	USART_InitStruct.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;					//模式：发送数据&接收数据
+	USART_InitStruct.USART_Parity = USART_Parity_No;								//无校验位
+	USART_InitStruct.USART_StopBits = USART_StopBits_1;								//1位停止位
+	USART_InitStruct.USART_WordLength = USART_WordLength_8b;						//8位数据位
+	USART_Init(USART1, &USART_InitStruct);
+	//开启USART1-RX到NVIC的中断
+	USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);  								//RXNE:读数据寄存器非空 (Read data register not empty)
+	//NVIC初始化
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+	NVIC_InitTypeDef NVIC_InitStruct;
+	NVIC_InitStruct.NVIC_IRQChannel = USART1_IRQn;
+	NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 1;
+	NVIC_InitStruct.NVIC_IRQChannelSubPriority = 1;
+	NVIC_Init(&NVIC_InitStruct);
+	//使能USART
+	USART_Cmd(USART1, ENABLE);
+}
+
+//函数：发送一个字节
+//参数：要发送的字节（数字形式）
+//返回值：无
+void Serial_SendByte(uint16_t Byte)
+{
+	USART_SendData(USART1, Byte);
+	while(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET);					//TXE:发送数据寄存器空 (Transmit data register empty)
+																					//确保数据已经从 发送数据寄存器 转移到 发送移位寄存器
+}
+
+//读取后清零Serial_RxFlag的值
+uint8_t Serial_GetRxFlag(void)
+{
+	if(Serial_RxFlag == 1){
+		Serial_RxFlag = 0;
+		return 1;
+	}
+	return 0;
+}
+
+//返回Serial_RxData的值
+uint8_t Serial_GetRxData(void)
+{
+	return Serial_RxData;
+}
+
+//中断函数
+void USART1_IRQHandler(void)
+{
+	if(USART_GetITStatus(USART1, USART_IT_RXNE) == SET){
+		Serial_RxFlag = 1;
+		Serial_RxData = USART_ReceiveData(USART1);
+		USART_ClearITPendingBit(USART1, USART_IT_RXNE);
+	}
+}
+```
+`main.c`
+```c
+#include "stm32f10x.h"                  // Device header
+#include "Delay.h"
+#include "OLED.h"
+#include "Serial.h"
+
+int main(void)
+{
+	OLED_Init();
+	Serial_Init();
+	
+	OLED_ShowString(1, 1, "Num:000");
+	
+	while (1)
+	{
+		if(Serial_GetRxFlag() == 1){
+			Serial_SendByte(Serial_GetRxData());
+			OLED_ShowHexNum(1, 5, Serial_GetRxData(), 3);
+		}
+	}
+}
+```
