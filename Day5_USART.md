@@ -426,6 +426,8 @@ void USART1_IRQHandler(void)
 ```
 
 ### 串口收发文本数据包
+- static的作用：让变量 “只初始化一次，生命周期贯穿整个程序”
+- `Serial_TxPacket[4]`本身是数组的第 5 个元素，类型是单个uint8_t，而{0x11, ...}是一个 “初始化列表”，两者类型不匹配
 
 `Serial.c`
 ```c
