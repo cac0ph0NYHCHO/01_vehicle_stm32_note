@@ -424,3 +424,163 @@ void USART1_IRQHandler(void)
 	}
 }
 ```
+
+### 串口收发文本数据包
+
+`Serial.c`
+```c
+#include "stm32f10x.h"                  // Device header
+#include <stdio.h>
+
+//定义收发数据包的缓存数组，给多点防止溢出
+char Serial_RxPacket[100];
+uint8_t Serial_RxFlag;
+
+void Serial_Init(void)
+{
+	//开启GPIO和USART时钟
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
+	//初始化GPIO PA9，发送数据
+	GPIO_InitTypeDef GPIO_InitStructure;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
+	//初始化GPIO PA10，接收数据
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
+	//初始化USART1
+	USART_InitTypeDef USART_InitStruct;
+	USART_InitStruct.USART_BaudRate = 9600;											//波特率
+	USART_InitStruct.USART_HardwareFlowControl = USART_HardwareFlowControl_None;	//硬件流控制
+	USART_InitStruct.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;					//模式：发送数据&接收数据
+	USART_InitStruct.USART_Parity = USART_Parity_No;								//无校验位
+	USART_InitStruct.USART_StopBits = USART_StopBits_1;								//1位停止位
+	USART_InitStruct.USART_WordLength = USART_WordLength_8b;						//8位数据位
+	USART_Init(USART1, &USART_InitStruct);
+	//开启USART1-RX到NVIC的中断
+	USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);  								//RXNE:读数据寄存器非空 (Read data register not empty)
+	//NVIC初始化
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+	NVIC_InitTypeDef NVIC_InitStruct;
+	NVIC_InitStruct.NVIC_IRQChannel = USART1_IRQn;
+	NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 1;
+	NVIC_InitStruct.NVIC_IRQChannelSubPriority = 1;
+	NVIC_Init(&NVIC_InitStruct);
+	//使能USART
+	USART_Cmd(USART1, ENABLE);
+}
+
+//函数：发送一个字节
+//参数：要发送的字节（数字形式）
+//返回值：无
+void Serial_SendByte(uint16_t Byte)
+{
+	USART_SendData(USART1, Byte);
+	while(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET);					//TXE:发送数据寄存器空 (Transmit data register empty)
+																					//确保数据已经从 发送数据寄存器 转移到 发送移位寄存器
+}
+
+//函数：发送一个字符串
+//参数：字符串（传入的是第一个字符的首地址）
+//返回值：无
+void Serial_SendString(char *String)
+{
+	uint8_t i;
+	for(i = 0; String[i] != '\0'; i++){
+		Serial_SendByte(String[i]);
+	}
+}
+
+//读取后清零Serial_RxFlag的值
+uint8_t Serial_GetRxFlag(void)
+{
+	if(Serial_RxFlag == 1){
+		Serial_RxFlag = 0;
+		return 1;
+	}
+	return 0;
+}
+
+
+//中断函数
+void USART1_IRQHandler(void)
+{
+	static uint8_t State = 0;		//状态机的状态标志位，static只初始化一次，生命周期整个程序
+	static uint8_t pRxPacket = 0;	//接收缓存数组的第几个
+	if(USART_GetITStatus(USART1, USART_IT_RXNE) == SET){
+		uint8_t RxData = USART_ReceiveData(USART1);
+		if(State == 0){
+			if(RxData == '@'){
+				State = 1;
+				pRxPacket = 0;		//别忘了清零
+			}
+		}
+		else if(State == 1){
+			if(RxData == '\r'){
+				State = 2;
+			}
+			else{
+				Serial_RxPacket[pRxPacket] = RxData;
+				pRxPacket++;
+			}
+		}
+		else if(State == 2){
+			if(RxData == '\n'){
+				Serial_RxPacket[pRxPacket] = '\0';	//字符串末尾标志
+				State = 0;
+				Serial_RxFlag = 1;
+			}
+		}
+		USART_ClearITPendingBit(USART1, USART_IT_RXNE);
+	}
+}
+```
+`Serial.h`
+```c
+#ifndef __SERIAL_H
+#define __SERIAL_H
+
+#include <stdio.h>
+
+//向外部声明数组，不用写数组成员个数
+extern char Serial_RxPacket[];
+
+void Serial_Init(void);
+void Serial_SendByte(uint16_t Byte);
+void Serial_SendString(char *String);
+
+
+uint8_t Serial_GetRxFlag(void);
+
+
+#endif
+```
+`main.c`
+```c
+#include "stm32f10x.h"                  // Device header
+#include "Delay.h"
+#include "OLED.h"
+#include "Serial.h"
+
+int main(void)
+{
+	OLED_Init();
+	Serial_Init();
+	
+//	Serial_SendString("Helloworld!");
+	OLED_ShowString(1, 1, "RxPacket:");
+	
+	while (1)
+	{
+		if(Serial_GetRxFlag() == 1){
+			OLED_ShowString(2, 1, "                ");
+			OLED_ShowString(2, 1, Serial_RxPacket);
+		}
+	}
+}
+```
