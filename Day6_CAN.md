@@ -40,6 +40,9 @@
 ## 数据帧
 ![31](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/31.png)
 
+-显性（0）：Dominant（D）  
+ 隐性（1）：Recessive（R）  
+
 - SOF（Start of Frame）：帧起始，表示后面一段波形为传输的数据位
 - ID（Identify）：标识符，区分功能，同时决定优先级
 - RTR（Remote Transmission Request ）：远程请求位，区分数据帧和遥控帧
