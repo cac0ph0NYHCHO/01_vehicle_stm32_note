@@ -37,3 +37,20 @@
 #### CAN物理层特性
 ![30](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/30.png)
 
+## 数据帧
+![31](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/31.png)
+
+- SOF（Start of Frame）：帧起始，表示后面一段波形为传输的数据位
+- ID（Identify）：标识符，区分功能，同时决定优先级
+- RTR（Remote Transmission Request ）：远程请求位，区分数据帧和遥控帧
+- IDE（Identifier Extension）：扩展标志位，区分标准格式和扩展格式
+- SRR（Substitute Remote Request）：替代RTR，协议升级时留下的无意义位
+- r0/r1（Reserve）：保留位，为后续协议升级留下空间
+- DLC（Data Length Code）：数据长度，指示数据段有几个字节
+- Data：数据段的1~8个字节有效数据
+- CRC（Cyclic Redundancy Check）：循环冗余校验，校验数据是否正确
+- ACK（Acknowledgement）：应答位，判断数据有没有被接收方接收
+- CRC/ACK界定符：为应答位前后发送方和接收方释放总线留下时间
+- EOF（End of Frame ）：帧结束，表示数据位已经传输完毕
+
+
