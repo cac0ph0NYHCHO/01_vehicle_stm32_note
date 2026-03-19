@@ -56,4 +56,22 @@
 - CRC/ACK界定符：为应答位前后发送方和接收方释放总线留下时间
 - EOF（End of Frame ）：帧结束，表示数据位已经传输完毕
 
+### 遥控帧
+- 遥控帧无数据段，RTR为隐性电平1，其他部分与数据帧相同
 
+![32](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/32.png)
+
+### 错误帧
+- 总线上所有设备都会监督总线的数据，一旦发现“位错误”或“填充错误”或“CRC错误”或“格式错误”或“应答错误” ，这些设备便会发出错误帧来破坏数据，同时终止当前的发送设备
+
+![33](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/33.png)
+
+### 过载帧
+- 当接收方收到大量数据而无法处理时，其可以发出过载帧，延缓发送方的数据发送，以平衡总线负载，避免数据丢失
+
+![34](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/34.png)
+
+### 帧间隔
+- 将数据帧和遥控帧与前面的帧分离开
+
+![35](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/35.png)
