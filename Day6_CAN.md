@@ -160,6 +160,8 @@
 - 被动错误状态的设备正常参与通信但检测到错误时只能发出被动错误帧
 - 总线关闭状态的设备不能参与通信
 - 每个设备内部管理一个TEC和REC，根据TEC和REC的值确定自己的状态
+- TEC: Transmit Error Counter 发送错误计数器  
+  REC: Receive Error Counter 接收错误计数器
 ![43](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/43.png)
 
 ### 错误计数器
