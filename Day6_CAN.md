@@ -149,3 +149,19 @@
 ![41](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/41.png)
 
 - 标准遥控帧(win) VS 扩展数据帧
+
+
+### 错误类型
+- 错误共有5种： 位错误、填充错误、CRC错误、格式错误、应答错误
+![42](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/42.png)
+
+### 错误状态
+- 主动错误状态的设备正常参与通信并在检测到错误时发出主动错误帧
+- 被动错误状态的设备正常参与通信但检测到错误时只能发出被动错误帧
+- 总线关闭状态的设备不能参与通信
+- 每个设备内部管理一个TEC和REC，根据TEC和REC的值确定自己的状态
+![43](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/43.png)
+
+### 错误计数器
+![44](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/44.png)
+
