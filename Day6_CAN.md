@@ -200,3 +200,40 @@
 - NART：置1，关闭自动重传，CAN报文只被发送1次，不管发送的结果如何（成功、出错或仲裁丢失）；置0，自动重传，CAN硬件在发送报文失败时会一直自动重传直到发送成功
 - TXFP：置1，优先级由发送请求的顺序来决定，先请求的先发送；置0，优先级由报文标识符来决定，标识符值小的先发送（标识符值相等时，邮箱号小的报文先发送）
 - RFLM：置1，接收FIFO锁定，FIFO溢出时，新收到的报文会被丢弃；置0，禁用FIFO锁定，FIFO溢出时，FIFO中最后收到的报文被新报文覆盖
+
+## 标识符过滤器
+- 每个过滤器的核心由两个32位寄存器组成：R1[31:0]和R2[31:0]
+- FSCx(位宽设置): 置0，16位；置1，32位
+- FBMx(模式设置)： 置0，屏蔽模式；置1，列表模式
+- FFAx(关联设置)：置0，FIFO 0；置1，FIFO 1
+- FACTx(激活设置)：置0，禁用；置1，启用
+![51](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/51.png)
+
+### 测试模式
+- 静默模式：用于分析CAN总线的活动，不会对总线造成影响
+- 环回模式：用于自测试，同时发送的报文可以在CAN_TX引脚上检测到
+- 环回静默模式：用于热自测试，自测的同时不会影响CAN总线
+![52](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/52.png)
+
+### 工作模式
+- 初始化模式：用于配置CAN外设，禁止报文的接收和发送
+- 正常模式：配置CAN外设后进入正常模式，以便正常接收和发送报文
+- 睡眠模式：低功耗，CAN外设时钟停止，可使用软件唤醒或者硬件自动唤醒
+- AWUM：置1，自动唤醒，一旦检测到CAN总线活动，硬件就自动清零SLEEP，唤醒CAN外设；置0，手动唤醒，软件清零SLEEP，唤醒CAN外设
+![53](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/53.png)
+
+### 位时间特性
+![54](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/54.png)
+
+### 中断
+![55](https://cdn.jsdelivr.net/gh/cac0ph0NYHCHO/01_vehicle_stm32_note@main/images/55.png)
+
+### 时间触发通信
+<img width="1844" height="909" alt="image" src="https://github.com/user-attachments/assets/fc1e4a25-abbf-4eac-b679-7820ab9e59f4" />
+
+### 错误处理和离线恢复
+- TEC和REC根据错误的情况增加或减少
+- ABOM：置1，开启离线自动恢复，进入离线状态后，就自动开启恢复过程；置0，关闭离线自动恢复，软件必须先请求进入然后再退出初始化模式，随后恢复过程才被开启
+<img width="781" height="460" alt="image" src="https://github.com/user-attachments/assets/e1e34f17-89bf-40c0-8b7e-da4079f6bd90" />
+
+                            
