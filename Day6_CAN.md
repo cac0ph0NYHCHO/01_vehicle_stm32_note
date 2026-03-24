@@ -267,3 +267,118 @@
 
 #### TxMessage
 - CRC由硬件自动生成和校验
+
+### demo
+`MyCAN.c`
+```c
+#include "stm32f10x.h"                  // Device header
+
+void MyCAN_Init(void)
+{
+	//开启GPIO和CAN1时钟
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_CAN1, ENABLE);
+	//初始化GPIO,即Rx(PA11)和Tx(PA12)
+	GPIO_InitTypeDef GPIO_InitStruct;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IPU;
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_11;
+	GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOA, &GPIO_InitStruct);
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF_PP;
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_12;
+	GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOA, &GPIO_InitStruct);
+	//初始化CAN1外设
+	CAN_InitTypeDef CAN_InitStruct;
+	CAN_InitStruct.CAN_Mode = CAN_Mode_Normal; 	//官方文件指引有误！
+	CAN_InitStruct.CAN_Prescaler = 48;				//波特率 = 36M/48/1+2+3 = 125K
+	CAN_InitStruct.CAN_BS1 = CAN_BS1_2tq;
+	CAN_InitStruct.CAN_BS2 = CAN_BS2_3tq;
+	CAN_InitStruct.CAN_SJW = CAN_SJW_2tq;
+	CAN_InitStruct.CAN_ABOM = DISABLE;
+	CAN_InitStruct.CAN_AWUM = DISABLE;
+	CAN_InitStruct.CAN_NART = DISABLE;
+	CAN_InitStruct.CAN_RFLM = DISABLE;
+	CAN_InitStruct.CAN_TTCM = DISABLE;
+	CAN_InitStruct.CAN_TXFP = DISABLE;
+	CAN_Init(CAN1, &CAN_InitStruct);
+	//初始化CAN1过滤器
+	CAN_FilterInitTypeDef CAN_FilterInitStruct;
+	CAN_FilterInitStruct.CAN_FilterNumber = 0;
+	CAN_FilterInitStruct.CAN_FilterIdHigh = 0x0000;
+	CAN_FilterInitStruct.CAN_FilterIdLow = 0x0000;
+	CAN_FilterInitStruct.CAN_FilterMaskIdHigh = 0x0000;
+	CAN_FilterInitStruct.CAN_FilterMaskIdLow = 0x0000;					//接收所有报文
+	CAN_FilterInitStruct.CAN_FilterScale = CAN_FilterScale_32bit;	
+	CAN_FilterInitStruct.CAN_FilterMode = CAN_FilterMode_IdMask;		//32位屏蔽模式
+	CAN_FilterInitStruct.CAN_FilterFIFOAssignment = CAN_Filter_FIFO0;
+	CAN_FilterInitStruct.CAN_FilterActivation = ENABLE;
+	CAN_FilterInit(&CAN_FilterInitStruct);
+}
+
+//发送报文函数
+void MyCAN_Transmit(uint32_t ID, uint8_t Length, uint8_t *Data)
+{	
+	CanTxMsg TxMessage;
+	TxMessage.StdId = ID;	
+	TxMessage.ExtId = ID;	
+	TxMessage.IDE = CAN_Id_Standard;
+	TxMessage.RTR = CAN_RTR_Data;
+	TxMessage.DLC = Length;
+	for(uint8_t i = 0; i<Length; i++)
+	{
+		TxMessage.Data[i] = Data[i];
+	}
+	uint8_t TransmitMailbox = CAN_Transmit(CAN1, &TxMessage);
+	
+	uint32_t Temp = 0;
+	//等待接收完成
+	while (CAN_TransmitStatus(CAN1, TransmitMailbox) != CAN_TxStatus_Ok)
+	{
+		//超时退出，避免程序卡死
+		if(Temp > 100000)
+		{
+			break;
+		}
+		Temp++;
+	}
+}
+
+//判断FIFO里是否有数据要读，返回1表示有数据，返回0表示没有数据
+uint8_t MyCAN_FIFOStatus(void)
+{
+	if(CAN_MessagePending(CAN1, CAN_FIFO0) > 0)
+	{
+		return 1;
+	}
+	return 0;
+}
+
+//接收报文，多返回值用指针返回
+void MyCAN_Receive(uint32_t *ID, uint8_t *Length, uint8_t *Data)
+{
+	CanRxMsg RxMessage;
+	CAN_Receive(CAN1, CAN_FIFO0, &RxMessage);	//接收报文的数据都存在结构体里了
+	
+	if(RxMessage.IDE == CAN_Id_Standard)
+	{
+		*ID = RxMessage.StdId;
+	}
+	else
+	{
+		*ID = RxMessage.ExtId;
+	}
+	if(RxMessage.RTR == CAN_RTR_Data)
+	{
+		*Length = RxMessage.DLC;
+		for(uint8_t i = 0; i<*Length; i++)
+		{
+			Data[i] = RxMessage.Data[i];
+		}
+	}
+	else
+	{
+		//......
+	}
+}
+```
