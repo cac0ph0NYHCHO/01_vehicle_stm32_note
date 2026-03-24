@@ -264,3 +264,6 @@
 - `CAN_FilterMode`选择过滤器模式：列表模式/屏蔽模式
 - `CAN_FilterFIFOAssignment`配置过滤器关联：进FIFO0/FIFO1
 - `CAN_FilterActivation`激活过滤器，使能工作
+
+#### TxMessage
+- CRC由硬件自动生成和校验
