@@ -236,4 +236,19 @@
 - ABOM：置1，开启离线自动恢复，进入离线状态后，就自动开启恢复过程；置0，关闭离线自动恢复，软件必须先请求进入然后再退出初始化模式，随后恢复过程才被开启
 <img width="781" height="460" alt="image" src="https://github.com/user-attachments/assets/e1e34f17-89bf-40c0-8b7e-da4079f6bd90" />
 
-                            
+#### CAN_InitStruct里面参数的含义
+- `CAN_Mode`选择测试模式：**！！！官方文件指引有误！！！**  
+ CAN_Mode_Normal 正常模式  
+ CAN_Mode_LoopBack 环回模式  
+ CAN_Mode_Silent 静默模式  
+ CAN_Mode_Silent_LoopBack 环回静默模式
+- `CAN_Prescaler`位时序配波特率里的分频系数
+- `CAN_BS1`配置BS1的Tq数量
+- `CAN_BS2`配置BS2的Tq数量
+- `CAN_SJW`再同步补偿宽度
+- `CAN_NART`不自动重传：1关闭自动重传；0自动重传
+- `CAN_TXFP`发送邮箱优先级：1先请求先发送；0ID号小的先发送
+- `CAN_RFLM`FIFO锁定：1FIFO溢出时新报文丢弃；0FIFO溢出时最后收到的报文被新报文覆盖
+- `CAN_AWUM`自动唤醒：1自动唤醒；0手动唤醒
+- `CAN_TTCM`时间触发通信模式：1开启；0关闭
+- `CAN_ABOM`离线自动恢复：1开启；0关闭
