@@ -252,3 +252,15 @@
 - `CAN_AWUM`自动唤醒：1自动唤醒；0手动唤醒
 - `CAN_TTCM`时间触发通信模式：1开启；0关闭
 - `CAN_ABOM`离线自动恢复：1开启；0关闭
+
+#### CAN_FilterInitStruct里面参数的含义
+- `CAN_FilterNumber`指定第几个过滤器被初始化
+- `CAN_FilterIdHigh` `CAN_FilterIdLow` `CAN_FilterMaskIdHigh` `CAN_FilterMaskIdLow`：过滤器的两个32位寄存器    
+ 16位列表模式：分别存一组ID  
+ 16位屏蔽模式：IdHigh存第一组ID，MaskIdHigh存屏蔽位；IdLow存第二组ID，MaskIdLow存屏蔽位  
+ 32位列表模式：IdHigh和IdLow存第一组ID；MaskIdHigh和MaskIdLow存第二组ID  
+ 32位屏蔽模式：IdHigh和IdLow存第一组ID；MaskIdHigh和MaskIdLow存屏蔽位
+- `CAN_FilterScale`选择过滤器位宽：16位/32位
+- `CAN_FilterMode`选择过滤器模式：列表模式/屏蔽模式
+- `CAN_FilterFIFOAssignment`配置过滤器关联：进FIFO0/FIFO1
+- `CAN_FilterActivation`激活过滤器，使能工作
